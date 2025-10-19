@@ -57,9 +57,12 @@
   const removeAllBtn = $('#removeAll');
 
   const qiConsole = $('#qiConsole');
+
   const qiLog = $('#qiLog');
 
   // --- State ---
+    
+
   let CURRENT_TEAM = null; // 'UNLOADING' | 'QUALITY' | null
   let CURRENT_USERNAME = localStorage.getItem('teamComm_username') || '';
   let removeMode = (localStorage.getItem('teamComm_removeMode') === '1'); // Unloading toggle
@@ -105,27 +108,41 @@
 
   // Adaptive refresh cadence: 0–1m:5s, 1–30m:60s, 30–40m:5m, 40–60m:10m, 60m+:60m
   let ageTimer = null;
-  function scheduleAges(){
+  
+function scheduleAges(){
     if(ageTimer) clearTimeout(ageTimer);
     refreshAges();
+
     const now = Date.now();
-    let nextSec = 60;
     const arr = Object.values(items);
-    if(arr.length === 0){ nextSec = 60; ageTimer = setTimeout(scheduleAges, nextSec*1000); return; }
+    if(arr.length === 0){
+      ageTimer = setTimeout(scheduleAges, 60*1000);
+      return;
+    }
+
+    // compute the next refresh time so we drop the 5m highlight exactly
+    let nextSec = 60; // fallback
     for(const it of arr){
       const t = it.updatedAt || it.createdAt || now;
       const m = (now - t) / 60000;
-      let s;
-      if (m < 1) s = 5;
-      else if (m < 30) s = 60;
-      else if (m < 40) s = 300;
-      else if (m < 60) s = 600;
-      else s = 3600;
-      nextSec = Math.min(nextSec, s);
+
+      // If any item is younger than 5m, schedule to the boundary
+      if(m < 5){
+        const to5 = Math.max(1, Math.ceil((5 - m) * 60)); // seconds until 5m
+        nextSec = Math.min(nextSec, to5);
+      }else if(m < 30){
+        nextSec = Math.min(nextSec, 60);
+      }else if(m < 40){
+        nextSec = Math.min(nextSec, 300);
+      }else if(m < 60){
+        nextSec = Math.min(nextSec, 600);
+      }else{
+        nextSec = Math.min(nextSec, 3600);
+      }
     }
     ageTimer = setTimeout(scheduleAges, Math.max(5, nextSec) * 1000);
-  }
-  function refreshAges(){
+}
+function refreshAges(){
     // Ready list
     $$('#doneList li.item').forEach(li => {
       const it = items[li.dataset.key]; if(!it) return;
@@ -138,7 +155,7 @@
       }
       const min = (Date.now()-t)/60000;
       li.classList.toggle('faded-old', min >= 30);
-      li.classList.toggle('recent-ready', min < 10);
+      li.classList.toggle('recent-ready', min < 5);
     });
     // Queue (no fade)
     $$('#queueList li.item').forEach(li => {
@@ -527,6 +544,8 @@
   // --- Role entry ---
   on($('#enterUnloading'), 'click', ()=>{
     CURRENT_TEAM = 'UNLOADING';
+    document.body.classList.add('mode-unloading');
+    document.body.classList.remove('mode-quality');
     appHeader.style.display='none';
     mainPick.style.display='none'; workspace.style.display='flex';
     workspace.removeAttribute('aria-hidden');
@@ -556,6 +575,7 @@
     teamTitle.textContent='Quality Inspection';
     teamNote.textContent='';
     removeModeContainer.hidden = true; // unloading-only
+    
     fab.hidden = false;
     qiConsole.hidden = false;
     rerenderAll();
@@ -574,6 +594,7 @@
 
   on(logoutBtn, 'click', ()=>{
     CURRENT_TEAM = null;
+    document.body.classList.remove('mode-unloading','mode-quality');
     CURRENT_USERNAME = '';
     localStorage.removeItem('teamComm_username');
     workspace.style.display='none'; mainPick.style.display='block';
