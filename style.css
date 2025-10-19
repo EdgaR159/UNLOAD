@@ -151,10 +151,66 @@ li.item{display:flex;align-items:center;gap:12px;min-height:var(--item-h);paddin
   .bubble{width:60px;height:60px;font-size:20px}
 }
 
-/* Mobile-only: enable full scrolling + pinch-zoom for Unloading */
+
+/* Unloading: keep the Add SKU bar stuck to the very top while scrolling */
 @media (pointer: coarse) {
-  body.scroll-page {
+  body.role-unloading .addbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    margin-left: -10px;
+    margin-right: -10px;
+    padding-left: 12px;
+    padding-right: 12px;
+    background: rgba(18,19,20,.92);
+    backdrop-filter: blur(4px);
+  }
+}
+
+
+
+/* Unloading: compact widths and spacing (single column, no 2-up) */
+body.role-unloading .app { max-width: 640px; }
+body.role-unloading .board { gap: 8px; }
+body.role-unloading .card { padding: 8px; }
+body.role-unloading ul.list { gap: 6px; }
+
+/* Compact tile sizes so more fit on screen */
+@media (pointer: coarse) {
+  body.role-unloading { --item-h: 58px; --bubble: 48px; }
+  /* Queue tiles: aim to fit ~3 at a glance */
+  body.role-unloading #queueList li.item { min-height: 56px; }
+  /* Ready tiles: aim to fit ~5 at a glance */
+  body.role-unloading #doneList li.item  { min-height: 46px; }
+  /* Slightly smaller fonts in tiles */
+  body.role-unloading .status-text { font-size: 11px; }
+  body.role-unloading .age-text    { font-size: 9.5px; }
+  /* Controls/button compact */
+  body.role-unloading .status-btn  { min-height: 32px; padding: 6px 8px; font-size: 10.5px; }
+  body.role-unloading .more-btn    { min-height: 32px; padding: 6px 8px; }
+  body.role-unloading .remove-x    { width: 32px; height: 32px; font-size: 16px; }
+  /* Input tighter */
+  body.role-unloading #skuInput { max-width: 200px; padding: 8px; font-size: 15px; }
+}
+
+
+
+/* Unloading mobile: allow both axis scroll when needed */
+@media (pointer: coarse) {
+  body.role-unloading.scroll-page {
     overflow: auto !important;
     touch-action: pan-x pan-y pinch-zoom;
   }
 }
+
+
+
+/* Unloading headers compact */
+@media (pointer: coarse) {
+  body.role-unloading .sizebar { border-radius: 0 0 12px 12px; margin-bottom: 6px; }
+  body.role-unloading .seg     { margin-bottom: 6px; }
+}
+

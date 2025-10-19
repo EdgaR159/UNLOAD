@@ -621,25 +621,3 @@
   }
 
 })();
-
-
-// Fallback scroll/zoom toggles if direct injection points were not found
-(function(){
-  var u = document.getElementById('enterUnloading');
-  var q = document.getElementById('enterQuality');
-  if (u && !u._scrollHooked) {
-    u._scrollHooked = true;
-    u.addEventListener('click', function(){
-      try{
-        var isMobile = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        if (isMobile) { document.body.classList.add('scroll-page'); }
-      }catch(e){}
-    }, true);
-  }
-  if (q && !q._scrollHooked) {
-    q._scrollHooked = true;
-    q.addEventListener('click', function(){
-      document.body.classList.remove('scroll-page');
-    }, true);
-  }
-})();
