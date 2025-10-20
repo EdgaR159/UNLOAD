@@ -150,3 +150,21 @@ li.item{display:flex;align-items:center;gap:12px;min-height:var(--item-h);paddin
   .app{padding:12px}
   .bubble{width:60px;height:60px;font-size:20px}
 }
+
+
+/* === Unloading compact mobile polish v2 === */
+@media (max-width: 520px){
+  body.mode-unloading h1{ font-size:22px; margin:0 0 6px 0; }
+  body.mode-unloading .app-header{ padding:10px 12px 0 12px; }
+  body.mode-unloading .card{ padding:8px 10px; }
+  body.mode-unloading .card .title{ margin-bottom:6px; }
+  /* Hide 'Ready' text in Completed; keep only age on phones */
+  body.mode-unloading #doneList .status-text{ display:none !important; }
+  /* Tighter meta line */
+  body.mode-unloading .item .age-text{ font-size:12px; line-height:1.2; }
+  /* Make remove toggle short */
+  body.mode-unloading .remove-toggle{ font-size:0 }
+  body.mode-unloading .remove-toggle::after{ content:'Remove'; font-size:12px; margin-left:8px; opacity:0.9 }
+  body.mode-unloading .remove-toggle input{ transform:scale(1.05) }
+}
+

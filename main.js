@@ -60,6 +60,15 @@
   const qiLog = $('#qiLog');
 
   // --- State ---
+  function isCompactMobile(){ return document.body.classList.contains('mode-unloading') && window.innerWidth <= 520; }
+  function formatAgoCompact(ms){
+    const sec = Math.max(0, Math.floor((Date.now() - ms)/1000));
+    if(sec < 1) return 'Just now';
+    if(sec < 60) return sec + 's';
+    const m = Math.floor(sec/60); if(m<60) return m + 'm';
+    const h = Math.floor(m/60); return h + 'h';
+  }
+
   let CURRENT_TEAM = null; // 'UNLOADING' | 'QUALITY' | null
   let CURRENT_USERNAME = localStorage.getItem('teamComm_username') || '';
   let removeMode = (localStorage.getItem('teamComm_removeMode') === '1'); // Unloading toggle
@@ -258,7 +267,7 @@
     if(ageLine){
       const t = it.updatedAt || it.createdAt || 0;
       const name = it.updatedBy ? it.updatedBy : (it.teamAdded || '');
-      ageLine.textContent = (name ? (name + ' · ') : '') + formatAgo(t);
+      ageLine.textContent = isCompactMobile() ? formatAgoCompact(t) : ((name ? (name + ' · ') : '') + formatAgo(t));
       ageLine.className = 'age-text ' + ageClass(t);
     }
   }
