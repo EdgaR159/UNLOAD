@@ -149,39 +149,34 @@ li.item{display:flex;align-items:center;gap:12px;min-height:var(--item-h);paddin
   .board{grid-template-columns:1fr}
   .app{padding:12px}
   .bubble{width:60px;height:60px;font-size:20px}
-/* === FORCE COMPACT FOR UNLOADING (override) === */
-body.mode-unloading .card{ padding:8px 10px !important; }
-body.mode-unloading .card .title{ margin-bottom:6px !important; }
-body.mode-unloading .list{ gap:6px !important; }
-
-body.mode-unloading .list li.item{
-  min-height:52px !important;
-  padding:6px 10px !important;
-  gap:10px !important;
 }
 
-/* smaller bubble so more rows fit */
-body.mode-unloading .list li.item .bubble{
-  width:44px !important;
-  height:44px !important;
-  font-size:18px !important;
-  line-height:1 !important;
-  display:flex; align-items:center; justify-content:center;
+
+/* === Phone scrolling fix for Unloading: use page scroll, not nested lists === */
+@media (max-width: 520px){
+  html, body{ height:auto !important; min-height:100%; overflow-y:auto !important; }
+  body.mode-unloading .app{
+    height:auto !important;
+    min-height:100dvh;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch;
+  }
+  body.mode-unloading .workspace,
+  body.mode-unloading .board{ height:auto !important; min-height:0; overflow:visible !important; }
+  /* neutralize previous 3-row fixed heights for phone scrolling */
+  body.mode-unloading #queueList,
+  body.mode-unloading #doneList{ height:auto !important; overflow:visible !important; }
+  body.mode-unloading .card .list{ max-height:none !important; overflow:visible !important; }
 }
 
-/* hide the big "Ready" text in Completed */
-body.mode-unloading #doneList .status-text{ display:none !important; }
 
-/* tighter meta line */
-body.mode-unloading .item .age-text{
-  font-size:12px !important;
-  line-height:1.2 !important;
-}
 
-/* shorten the checkbox label */
-body.mode-unloading .remove-toggle{ font-size:0 !important; }
-body.mode-unloading .remove-toggle::after{
-  content:'Remove'; font-size:12px; margin-left:8px; opacity:.9;
-}
-body.mode-unloading .remove-toggle input{ transform:scale(1.05); }
-}
+/* === Unloading: tighter row & vertical controls === */
+body.mode-unloading .item{ justify-content:flex-start !important; gap:8px !important; }
+body.mode-unloading .item .meta{ flex:0 1 auto !important; }
+body.mode-unloading .item .controls{ margin-left:8px !important; align-self:flex-start; display:flex; flex-direction:column; gap:6px; }
+body.mode-unloading .status-btn, body.mode-unloading .more-btn{ padding:8px 10px; min-height:36px; }
+
+/* Ready highlight: thin 1px ring for first 7m */
+.recent-ready{ box-shadow:0 0 0 1px rgba(36,178,90,.40), 0 6px 22px rgba(0,0,0,.45) !important; }
+

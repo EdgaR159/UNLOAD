@@ -60,6 +60,15 @@
   const qiLog = $('#qiLog');
 
   // --- State ---
+  function isCompactMobile(){ return document.body.classList.contains('mode-unloading'); }
+  function formatAgoCompact(ms){
+    const sec = Math.max(0, Math.floor((Date.now() - ms)/1000));
+    if(sec < 1) return 'Just now';
+    if(sec < 60) return sec + 's';
+    const m = Math.floor(sec/60); if(m<60) return m + 'm';
+    const h = Math.floor(m/60); return h + 'h';
+  }
+
   function setBodyMode(){
     document.body.classList.toggle('mode-unloading', CURRENT_TEAM === 'UNLOADING');
     document.body.classList.toggle('mode-quality', CURRENT_TEAM === 'QUALITY');
@@ -110,27 +119,29 @@
 
   // Adaptive refresh cadence: 0–1m:5s, 1–30m:60s, 30–40m:5m, 40–60m:10m, 60m+:60m
   let ageTimer = null;
-  function scheduleAges(){
+  
+function scheduleAges(){
     if(ageTimer) clearTimeout(ageTimer);
     refreshAges();
     const now = Date.now();
-    let nextSec = 60;
     const arr = Object.values(items);
-    if(arr.length === 0){ nextSec = 60; ageTimer = setTimeout(scheduleAges, nextSec*1000); return; }
+    if(arr.length === 0){ ageTimer = setTimeout(scheduleAges, 60*1000); return; }
+    let nextSec = 60;
     for(const it of arr){
       const t = it.updatedAt || it.createdAt || now;
       const m = (now - t) / 60000;
-      let s;
-      if (m < 1) s = 5;
-      else if (m < 30) s = 60;
-      else if (m < 40) s = 300;
-      else if (m < 60) s = 600;
-      else s = 3600;
-      nextSec = Math.min(nextSec, s);
+      if(m < 1) nextSec = Math.min(nextSec, 1);
+      if(m < 7){
+        const to7 = Math.max(1, Math.ceil((7 - m) * 60));
+        nextSec = Math.min(nextSec, to7);
+      }else if(m < 30) nextSec = Math.min(nextSec, 60);
+      else if(m < 40) nextSec = Math.min(nextSec, 300);
+      else if(m < 60) nextSec = Math.min(nextSec, 600);
+      else nextSec = Math.min(nextSec, 3600);
     }
-    ageTimer = setTimeout(scheduleAges, Math.max(5, nextSec) * 1000);
-  }
-  function refreshAges(){
+    ageTimer = setTimeout(scheduleAges, Math.max(1, nextSec) * 1000);
+}
+function refreshAges(){
     // Ready list
     $$('#doneList li.item').forEach(li => {
       const it = items[li.dataset.key]; if(!it) return;
@@ -138,12 +149,12 @@
       const ageEl = li.querySelector('.age-text');
       if(ageEl){
         const name = it.updatedBy ? it.updatedBy : (it.teamAdded || '');
-        ageEl.textContent = (name ? (name + ' · ') : '') + formatAgo(t);
+        ageEl.textContent = isCompactMobile() ? formatAgoCompact(t) : ((name ? (name + ' · ') : '') + formatAgo(t));
         ageEl.className = 'age-text ' + ageClass(t);
       }
       const min = (Date.now()-t)/60000;
       li.classList.toggle('faded-old', min >= 30);
-      li.classList.toggle('recent-ready', min < 10);
+      li.classList.toggle('recent-ready', min < 7);
     });
     // Queue (no fade)
     $$('#queueList li.item').forEach(li => {
@@ -152,7 +163,7 @@
       const ageEl = li.querySelector('.age-text');
       if(ageEl){
         const name = it.updatedBy ? it.updatedBy : (it.teamAdded || '');
-        ageEl.textContent = (name ? (name + ' · ') : '') + formatAgo(t);
+        ageEl.textContent = isCompactMobile() ? formatAgoCompact(t) : ((name ? (name + ' · ') : '') + formatAgo(t));
         ageEl.className = 'age-text ' + ageClass(t);
       }
       li.classList.remove('faded-old');
@@ -196,32 +207,39 @@
   const logsRef  = db.ref('logs/removals');
 
   // --- Duplicate computation (live, no DB writes needed) ---
-  function recomputeDuplicateFlags(){
-    const bySku = new Map();
-    for(const [k,v] of Object.entries(items)){
-      const key = String(v?.sku ?? '').trim();
-      if(!key) continue;
-      if(!bySku.has(key)) bySku.set(key, []);
-      bySku.get(key).push(k);
-    }
-    for(const [k,v] of Object.entries(items)) v._dup = false;
-    for(const ids of bySku.values()){
-      if(ids.length > 1) ids.forEach(k => { if(items[k]) items[k]._dup = true; });
-    }
-    for(const k of Object.keys(items)) {
-      const li = document.querySelector(`li.item[data-key="${k}"]`);
-      if(!li) continue;
-      li.classList.toggle('dup', !!items[k]._dup);
-      const existing = li.querySelector('.badge');
-      if(items[k]._dup){
-        if(!existing){ const b = document.createElement('div'); b.className='badge'; b.textContent='Duplicate'; li.appendChild(b); }
-      }else{
-        if(existing) existing.remove();
-      }
-    }
+  
+function recomputeDuplicateFlags(){
+  // Reset
+  for(const v of Object.values(items)){ if(v) v._dup = false; }
+  // Group by SKU
+  const groups = new Map();
+  for(const [id,v] of Object.entries(items)){
+    const key = String(v?.sku ?? '').trim();
+    if(!key) continue;
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ id, t:(v.updatedAt || v.createdAt || 0) });
   }
+  // Mark only newest in each group
+  for(const arr of groups.values()){
+    if(arr.length <= 1) continue;
+    arr.sort((a,b)=>a.t-b.t);
+    const newest = arr[arr.length-1];
+    if(items[newest.id]) items[newest.id]._dup = true;
+  }
+  // Reflect in DOM
+  for(const id of Object.keys(items)){
+    const li = document.querySelector(`li.item[data-key="${id}"]`);
+    if(!li) continue;
+    const flag = !!(items[id] && items[id]._dup);
+    li.classList.toggle('dup', flag);
+    const existing = li.querySelector('.badge');
+    if(flag){ if(!existing){ const b=document.createElement('div'); b.className='badge'; b.textContent='Duplicate'; li.appendChild(b);} }
+    else if(existing){ existing.remove(); }
+  }
+}
 
-  // --- Rendering ---
+// --- Rendering ---
+
   function createLI(key, it){
     const li = document.createElement('li');
     li.className = 'item';
@@ -263,7 +281,7 @@
     if(ageLine){
       const t = it.updatedAt || it.createdAt || 0;
       const name = it.updatedBy ? it.updatedBy : (it.teamAdded || '');
-      ageLine.textContent = (name ? (name + ' · ') : '') + formatAgo(t);
+      ageLine.textContent = isCompactMobile() ? formatAgoCompact(t) : ((name ? (name + ' · ') : '') + formatAgo(t));
       ageLine.className = 'age-text ' + ageClass(t);
     }
   }
@@ -613,6 +631,17 @@
     recomputeDuplicateFlags();
     scheduleAges();
   });
+
+
+  // Prune logs older than 2 hours (runs every 10 minutes)
+  function pruneOldLogs(){
+    const cutoff = Date.now() - 2*60*60*1000;
+    logsRef.orderByChild('at').endAt(cutoff).limitToLast(200).once('value', snap => {
+      snap.forEach(child => { try{ child.ref.remove(); }catch(e){} });
+    });
+  }
+  pruneOldLogs();
+  setInterval(pruneOldLogs, 10*60*1000);
 
   // QI console: stream logs of removals
   logsRef.limitToLast(50).on('child_added', s => {
