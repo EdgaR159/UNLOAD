@@ -60,13 +60,9 @@
   const qiLog = $('#qiLog');
 
   // --- State ---
-  function isCompactMobile(){ return document.body.classList.contains('mode-unloading') && window.innerWidth <= 520; }
-  function formatAgoCompact(ms){
-    const sec = Math.max(0, Math.floor((Date.now() - ms)/1000));
-    if(sec < 1) return 'Just now';
-    if(sec < 60) return sec + 's';
-    const m = Math.floor(sec/60); if(m<60) return m + 'm';
-    const h = Math.floor(m/60); return h + 'h';
+  function setBodyMode(){
+    document.body.classList.toggle('mode-unloading', CURRENT_TEAM === 'UNLOADING');
+    document.body.classList.toggle('mode-quality', CURRENT_TEAM === 'QUALITY');
   }
 
   let CURRENT_TEAM = null; // 'UNLOADING' | 'QUALITY' | null
@@ -267,7 +263,7 @@
     if(ageLine){
       const t = it.updatedAt || it.createdAt || 0;
       const name = it.updatedBy ? it.updatedBy : (it.teamAdded || '');
-      ageLine.textContent = isCompactMobile() ? formatAgoCompact(t) : ((name ? (name + ' · ') : '') + formatAgo(t));
+      ageLine.textContent = (name ? (name + ' · ') : '') + formatAgo(t);
       ageLine.className = 'age-text ' + ageClass(t);
     }
   }
@@ -536,6 +532,7 @@
   // --- Role entry ---
   on($('#enterUnloading'), 'click', ()=>{
     CURRENT_TEAM = 'UNLOADING';
+    setBodyMode();
     appHeader.style.display='none';
     mainPick.style.display='none'; workspace.style.display='flex';
     workspace.removeAttribute('aria-hidden');
@@ -559,6 +556,7 @@
     nameModal.setAttribute('aria-hidden','true');
 
     CURRENT_TEAM = 'QUALITY';
+    setBodyMode();
     appHeader.style.display='none';
     mainPick.style.display='none'; workspace.style.display='flex';
     workspace.removeAttribute('aria-hidden');
@@ -583,6 +581,7 @@
 
   on(logoutBtn, 'click', ()=>{
     CURRENT_TEAM = null;
+    setBodyMode();
     CURRENT_USERNAME = '';
     localStorage.removeItem('teamComm_username');
     workspace.style.display='none'; mainPick.style.display='block';

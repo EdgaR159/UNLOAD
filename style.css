@@ -149,22 +149,39 @@ li.item{display:flex;align-items:center;gap:12px;min-height:var(--item-h);paddin
   .board{grid-template-columns:1fr}
   .app{padding:12px}
   .bubble{width:60px;height:60px;font-size:20px}
+/* === FORCE COMPACT FOR UNLOADING (override) === */
+body.mode-unloading .card{ padding:8px 10px !important; }
+body.mode-unloading .card .title{ margin-bottom:6px !important; }
+body.mode-unloading .list{ gap:6px !important; }
+
+body.mode-unloading .list li.item{
+  min-height:52px !important;
+  padding:6px 10px !important;
+  gap:10px !important;
 }
 
-
-/* === Unloading compact mobile polish v2 === */
-@media (max-width: 520px){
-  body.mode-unloading h1{ font-size:22px; margin:0 0 6px 0; }
-  body.mode-unloading .app-header{ padding:10px 12px 0 12px; }
-  body.mode-unloading .card{ padding:8px 10px; }
-  body.mode-unloading .card .title{ margin-bottom:6px; }
-  /* Hide 'Ready' text in Completed; keep only age on phones */
-  body.mode-unloading #doneList .status-text{ display:none !important; }
-  /* Tighter meta line */
-  body.mode-unloading .item .age-text{ font-size:12px; line-height:1.2; }
-  /* Make remove toggle short */
-  body.mode-unloading .remove-toggle{ font-size:0 }
-  body.mode-unloading .remove-toggle::after{ content:'Remove'; font-size:12px; margin-left:8px; opacity:0.9 }
-  body.mode-unloading .remove-toggle input{ transform:scale(1.05) }
+/* smaller bubble so more rows fit */
+body.mode-unloading .list li.item .bubble{
+  width:44px !important;
+  height:44px !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  display:flex; align-items:center; justify-content:center;
 }
 
+/* hide the big "Ready" text in Completed */
+body.mode-unloading #doneList .status-text{ display:none !important; }
+
+/* tighter meta line */
+body.mode-unloading .item .age-text{
+  font-size:12px !important;
+  line-height:1.2 !important;
+}
+
+/* shorten the checkbox label */
+body.mode-unloading .remove-toggle{ font-size:0 !important; }
+body.mode-unloading .remove-toggle::after{
+  content:'Remove'; font-size:12px; margin-left:8px; opacity:.9;
+}
+body.mode-unloading .remove-toggle input{ transform:scale(1.05); }
+}
