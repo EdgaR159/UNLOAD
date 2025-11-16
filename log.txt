@@ -1,0 +1,115 @@
+=== PROJECT SUMMARY: UNLOADING + QUALITY INSPECTION WEB APP ===
+
+GOAL:
+Build a simple, locally-hosted Firebase web app that allows the unloading and quality inspection (QI) teams to coordinate tasks in real time, even under company network restrictions (strict CSP, blocked CDNs).
+
+---------------------------------------------------------------
+CORE OBJECTIVES:
+1. Website must function under corporate CSP restrictions (no blocked CDN connections).
+2. Firebase SDKs are hosted locally (firebase-app-compat.js, firebase-database-compat.js).
+3. UI optimized for both PC and phone (compact 370px design).
+4. Unloading team can manage queue SKUs.
+5. QI team can manage inspection SKUs.
+6. Real-time sync via Firebase Realtime Database.
+7. Deployed successfully to Netlify (CSP-compliant with _headers file).
+
+---------------------------------------------------------------
+UI RULES AND CHANGES:
+
+UNLOADING PAGE:
+- Removed header banner.
+- Removed space between SKU text and X button.
+- The “Remove SKU” checkbox replaced with a toggle button labeled “X” (color-coded).
+- SKU entry bar is centered between lists.
+- Only numbers allowed in SKU input field.
+- Unloading can only remove SKUs from the Queue list, not Ready list.
+- Top sticky text bar remains; inner duplicate bar removed.
+
+QUALITY INSPECTION PAGE:
+- Status buttons now update immediately on click (no refresh required).
+- When SKU is done, its status buttons are removed.
+- SKU text bar placed above list.
+- Removed unnecessary remove buttons for QI SKUs.
+- Added floating “+” menu with “Remove Completed” and “Remove All” buttons.
+- Floating menu expands upward (not downward).
+- Added QI console showing recent removals (last 1 hour), max 3 visible rows.
+- QI console auto-clears logs after 1 hour.
+
+OVERALL UI IMPROVEMENTS:
+- Fixed pixelated text with CSS font rendering improvements.
+- Color-coded time text (gray if older than 30 minutes).
+- Responsive for 370px width (phone-optimized).
+
+---------------------------------------------------------------
+SECURITY AND FIREBASE SETUP:
+
+LOCAL SDK FILES (stored alongside index.html):
+- firebase-app-compat.js
+- firebase-database-compat.js
+
+FIREBASE CONFIG:
+const firebaseConfig = {
+  apiKey: "AIzaSyBeQJVhgz1M_BoNoNOEv_VCfk4jfHCkvDo",
+  authDomain: "unloading-90c43.firebaseapp.com",
+  databaseURL: "https://unloading-90c43-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "unloading-90c43",
+  storageBucket: "unloading-90c43.firebasestorage.app",
+  messagingSenderId: "943213344061",
+  appId: "1:943213344061:web:661d4ef207c6887fbd8154"
+};
+
+FIREBASE RULES (secure, non-expiring):
+{
+  "rules": {
+    ".read": true,
+    ".write": false,
+    "items": {
+      ".indexOn": ["createdAt", "updatedAt", "status", "sku"],
+      "$id": {
+        ".write": true,
+        "sku": { ".validate": "newData.isString() && newData.val().matches(/^\\\\d{1,12}$/)" },
+        "status": { ".validate": "newData.isString() && newData.val().matches(/^(New|In progress|Ready)$/)" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "teamAdded": { ".validate": "newData.isString()" },
+        "updatedBy": { ".validate": "newData.isString()" },
+        "$other": { ".validate": false }
+      }
+    },
+    "logs": {
+      "removals": {
+        ".indexOn": ["at"],
+        "$rid": {
+          ".write": true,
+          "sku": { ".validate": "newData.isString() && newData.val().matches(/^\\\\d{1,12}$/)" },
+          "by": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "at": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      }
+    }
+  }
+}
+
+---------------------------------------------------------------
+DEPLOYMENT & CSP FIXES:
+
+Netlify `_headers` file contains CSP rule overrides allowing local SDK execution:
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebasedatabase.app wss://*.firebasedatabase.app;
+
+This ensures Firebase Realtime DB connects even under strict corporate filtering.
+
+---------------------------------------------------------------
+NEXT STEPS:
+
+1. Add Excel import function to upload list of SKUs.
+2. Possibly add authentication (anonymous) to silence Firebase insecure rule warnings.
+3. Optional: add “pages” functionality to clear and rebuild DOM between sections (simulate page routing without reload).
+
+---------------------------------------------------------------
+NOTES:
+- Corporate environment confirmed: CSP + blocked CDN (e.g. gstatic.com).
+- Hosting SDKs locally fixed ERR_CONNECTION_CLOSED issue.
+- Test environment verified operational inside company network.
+- Firebase email warnings are safe to ignore as long as .write/.validate rules remain.

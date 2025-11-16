@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Unloading / QI</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="unloading-page">
+  <!-- Role picker -->
+  <header id="siteHeader" class="page-header">
+    <div>
+      <h1>Unloading Helper</h1>
+      </div>
+  </header>
+
+  <main id="rolePick" class="picker" style="display:none">
+    <div class="picker-head">
+      <div class="picker-title">Choose role</div>
+      <div class="muted">Quality must enter name before starting</div>
+    </div>
+    <div class="role-row">
+      <button id="enterUnloading" class="btn">Unloading</button>
+      <button id="enterQuality" class="btn ghost">Quality Inspection</button>
+    </div>
+  </main>
+
+  <!-- quality name modal -->
+  <dialog id="nameDlg" class="dialog">
+    <div class="dialog-title">Enter your name</div>
+    <div class="muted" style="margin-top:6px">Shown on updates & removals</div>
+    <div class="row">
+      <input id="nameInput" placeholder="Your name" />
+      <button id="nameOk" class="btn">Start</button>
+    </div>
+  </dialog>
+
+  <!-- App -->
+  <section id="app" class="app" hidden>
+    <div class="topbar">
+      <div class="team">
+        <div id="teamTitle" class="team-title">—</div>
+        <div id="teamNote" class="team-note muted"></div>
+      </div>
+    </div>
+
+    <div id="netBanner" class="net-banner" hidden>Network problem — trying to reconnect…</div>
+
+    <div class="board">
+
+      <!-- STICKY TOP input bar (for BOTH teams); X toggle visible only for Unloading -->
+      <div id="centerAddRow" class="add-row center">
+        <input
+	id="skuInputCenter"
+	type="tel"
+	inputmode="numeric"
+	pattern="[0-9]*"
+	maxlength="6"
+	placeholder="Enter SKU"
+	autocomplete="off"
+        />
+        <button id="toggleRemoveCenter" class="toggle" title="Toggle remove (Unloading)">X</button>
+        <button id="addBtnCenter" class="btn grow">Add</button>
+      </div>
+
+      <!-- LEFT: Queue -->
+      <div class="card">
+        <div class="card-title">
+          <div>
+            <div class="card-h1">Queue</div>
+            <div class="muted">Active SKUs</div>
+          </div>
+        </div>
+
+        <!-- QI console (max 3 rows, newest at bottom) -->
+        <div id="qiConsole" class="qi-console" hidden>
+          <div class="qi-title">Removals (last 1h)</div>
+          <ul id="qiLogList" class="qi-log"></ul>
+        </div>
+
+        <ul id="queueList" class="list" aria-live="polite"></ul>
+      </div>
+
+      <!-- RIGHT: Completed -->
+      <div class="card">
+        <div class="card-title">
+          <div>
+            <div class="card-h1">Completed</div>
+            <div class="muted">Finished items (newest first)</div>
+          </div>
+        </div>
+        <ul id="doneList" class="list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Floating + actions (QI only) -->
+  <div id="fab" class="fab" hidden>
+    <button id="fabMain" class="fab-main">+</button>
+    <div id="fabActions" class="fab-actions" hidden>
+      <button id="fabRemoveReady" class="fab-item">Remove completed</button>
+      <button id="fabRemoveAll" class="fab-item danger">Remove all</button>
+    </div>
+  </div>
+
+  <!-- Local Firebase SDKs (place the two files next to index.html) -->
+  <script defer src="./firebase-app-compat.js"></script>
+  <script defer src="./firebase-database-compat.js"></script>
+  <script>window.UNL_ONLY = true;</script>
+  <script defer src="./main.js"></script>
+    
+    <!-- Chat v2 -->
+    <button id="chatBubble" class="chat-bubble" aria-label="Open chat">Chat</button>
+    <section id="chatWindow" class="chat-window hidden" aria-hidden="true">
+      <header class="chat-header">
+        <strong>Team Chat</strong>
+        <button id="chatClose" class="chat-close" aria-label="Close chat">×</button>
+      </header>
+      <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
+      <form id="chatForm" class="chat-form">
+        <input id="chatInput" type="text" placeholder="Type a message…" maxlength="500" autocomplete="off" />
+        <button id="chatSend" type="submit">Send</button>
+      </form>
+    </section>
+    </body>
+</html>

@@ -2,112 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Unloading Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Unloading / QI – Menu</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
-<body>
-  <div class="app">
-    <header id="appHeader" class="app-header">
-      <div>
-        <h1>MAKE UNLOADING GREAT AGAIN</h1>
-        <div class="subtitle">Pick your role to continue</div>
+<body data-screen="menu">
+  <header class="page-header">
+    <div>
+      <h1>Unloading Helper</h1>
       </div>
-    </header>
+  </header>
 
-    <main id="mainPick">
-      <div class="picker" aria-label="Pick role">
-        <div class="picker-head">
-          <div class="picker-title">Choose role</div>
-          <div class="muted picker-sub">Quality must enter name before starting</div>
-        </div>
-        <div class="role-row">
-          <button id="enterUnloading" class="role-btn">Unloading</button>
-          <button id="enterQuality" class="role-btn ghost">Quality Inspection</button>
-        </div>
-      </div>
-    </main>
-
-    <section id="workspace" class="workspace" aria-hidden="true">
-      <div class="topbar">
-        <div class="top-left">
-          <div class="team-title" id="teamTitle"></div>
-          <div class="team-note" id="teamNote"></div>
-        </div>
-        <div class="top-right">
-          <!-- single logout for both roles -->
-          <button id="logout" class="btn ghost logout">Logout</button>
-        </div>
-      </div>
-
-      <div class="board">
-        <div class="card">
-          <div class="card-title">
-            <div>
-              <div class="card-h1">Queue</div>
-              <div class="muted">Active SKUs</div>
-            </div>
-          </div>
-
-          <div class="add-row">
-            <input id="skuInput" placeholder="Enter SKU (1–4 digits)" inputmode="numeric" pattern="[0-9]*" maxlength="4" />
-            <div class="add-right">
-              <!-- Unloading-only: remove toggle placed next to Add (better on phones) -->
-              <label id="removeModeContainer" class="inline remove-toggle" hidden>
-                <input id="removeMode" type="checkbox" /> Remove SKU
-              </label>
-              <button id="addBtn" class="btn">Add</button>
-            </div>
-          </div>
-
-          <ul id="queueList" class="list" aria-live="polite"></ul>
-        </div>
-
-        <div class="card">
-          <div class="card-title">
-            <div>
-              <div class="card-h1">Completed</div>
-              <div class="muted">Finished items (newest first)</div>
-            </div>
-          </div>
-
-          <ul id="doneList" class="list"></ul>
-        </div>
-      </div>
-
-      <!-- QI-only bulk controls -->
-      <div id="qiFab" class="fab" hidden>
-        <button class="fab-main" id="fabMain" aria-label="More actions">+</button>
-        <div class="fab-menu" id="fabMenu" aria-hidden="true">
-          <button id="clearCompleted" class="menu-item">Clear Completed</button>
-          <button id="removeAll" class="menu-item danger">Remove All</button>
-        </div>
-      </div>
-
-      <!-- QI “almost invisible” removal console -->
-      <aside id="qiConsole" class="qi-console" hidden>
-        <div class="qi-title">Removals</div>
-        <ul id="qiLog"></ul>
-      </aside>
-    </section>
-  </div>
-
-  <!-- QI name modal -->
-  <div id="nameModal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop"></div>
-    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
-      <div id="nameTitle" class="modal-title">Enter your name</div>
-      <div class="modal-sub">Quality must enter a name before starting. It can only be changed after logout.</div>
-      <div class="input-row">
-        <input id="nameInput" placeholder="Your name" />
-        <button id="nameOk" class="btn">Start</button>
+  <main class="picker">
+    <div class="picker-card">
+      <h2>Select mode</h2>
+      <p class="muted">Pick your side for this device.</p>
+      <div class="picker-actions">
+        <a href="unloading.html" class="btn primary">Unloading</a>
+        <a href="qi.html" class="btn ghost">Quality Inspection</a>
       </div>
     </div>
-  </div>
-
-  <!-- Firebase SDKs (CSP-safe) -->
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script defer src="./main.js"></script>
+  </main>
 </body>
 </html>
